@@ -17,3 +17,5 @@ The source code of the program is written using python and the libraries 'numpy'
 Copyright
 =========
 This program can be distributed under GNU General Public License.
+
+If you use this code please cite: D. Abdullin, H. Matsuoka, M. Yulikov, N. Fleck, C. Klein, S. Spicher, G. Hagelueken, S. Grimme, A. Lützen, O. Schiemann, Pulsed EPR Dipolar Spectroscopy under the Breakdown of the High-Field Approximation: The High-Spin Iron(III) Case, submitted.
