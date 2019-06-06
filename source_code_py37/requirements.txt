@@ -1,0 +1,5 @@
+- python 3.7.X (including modules time, sys, argparse, math, os, datetime, errno, shutil)
+- numpy
+- scipy
+- matplotlib
+- libconf
