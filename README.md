@@ -13,11 +13,11 @@ Further description of the program can be found in our paper (see below).
 General Information
 =========
 The source code of the program is written in Python (2.7 and 3.7) using the libraries numpy, scipy, matplotlib and libconf. 
+The ready-to-use executables of the program are provided for Windows [in progress], Linux [in progress] and OS [in progress].
 
 Copyright
 =========
 This program can be distributed under GNU General Public License.
-The ready-to-use executables of the program are provided for Windows [in progress], Linux [in progress] and OS [in progress].
 
 If you use this code please cite: D. Abdullin, H. Matsuoka, M. Yulikov, N. Fleck, C. Klein, S. Spicher, G. Hagelueken, S. Grimme, A. Lützen, O. Schiemann, Pulsed EPR Dipolar Spectroscopy under the Breakdown of the High-Field Approximation: The High-Spin Iron(III) Case,
 Chem. Eur. J. 2019, doi: 10.1002/chem.201900977
