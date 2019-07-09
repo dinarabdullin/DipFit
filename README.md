@@ -20,4 +20,4 @@ Copyright
 This program can be distributed under GNU General Public License.
 
 If you use this code please cite: D. Abdullin, H. Matsuoka, M. Yulikov, N. Fleck, C. Klein, S. Spicher, G. Hagelueken, S. Grimme, A. Lützen, O. Schiemann, Pulsed EPR Dipolar Spectroscopy under the Breakdown of the High-Field Approximation: The High-Spin Iron(III) Case,
-Chem. Eur. J. 2019, doi: 10.1002/chem.201900977
+Chem. Eur. J. 2019, 25, 8820-8828.
