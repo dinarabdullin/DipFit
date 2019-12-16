@@ -20,13 +20,13 @@ HOW TO RUN
 1) Open Terminal or Command Prompt.
 
 2) Navigate to the root directory of the DipFit program:
-   cd …/DipFit/
+   cd …/DipFit/source_code
    
 3) Run the program by the following command:
-   python main.py /examples/example04_ls_iron(III)_nitroxide/config_ex04_1.cfg (simulates the dipolar spectrum vs angle xi, phi = 0°)
-   python main.py /examples/example04_ls_iron(III)_nitroxide/config_ex04_2.cfg (simulates the dipolar spectrum vs angle xi, phi = 30°)
-   python main.py /examples/example04_ls_iron(III)_nitroxide/config_ex04_3.cfg (simulates the dipolar spectrum vs angle xi, phi = 60°)
-   python main.py /examples/example04_ls_iron(III)_nitroxide/config_ex04_3.cfg (simulates the dipolar spectrum vs angle xi, phi = 90°)
+   python main.py examples/example04_ls_iron(III)_nitroxide/config_ex04_1.cfg (simulates the dipolar spectrum vs angle xi, phi = 0°)
+   python main.py examples/example04_ls_iron(III)_nitroxide/config_ex04_2.cfg (simulates the dipolar spectrum vs angle xi, phi = 30°)
+   python main.py examples/example04_ls_iron(III)_nitroxide/config_ex04_3.cfg (simulates the dipolar spectrum vs angle xi, phi = 60°)
+   python main.py examples/example04_ls_iron(III)_nitroxide/config_ex04_3.cfg (simulates the dipolar spectrum vs angle xi, phi = 90°)
 
 4) The results of the DipFit analysis will be saved in the folder:
    .../DipFit/examples/example04_ls_iron(III)_nitroxide/

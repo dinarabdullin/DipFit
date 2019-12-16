@@ -20,10 +20,10 @@ HOW TO RUN
 1) Open Terminal or Command Prompt.
 
 2) Navigate to the root directory of the DipFit program:
-   cd …/DipFit/
+   cd …/DipFit/source_code
    
 3) Run the program by the following command:
-   python main.py /examples/example03_hs_iron(III)_nitroxide_myoglobin/config_ex03.cfg
+   python main.py examples/example03_hs_iron(III)_nitroxide_myoglobin/config_ex03.cfg
 
 4) The results of the DipFit analysis will be saved in the folder:
    .../DipFit/examples/example03_hs_iron(III)_nitroxide_myoglobin/

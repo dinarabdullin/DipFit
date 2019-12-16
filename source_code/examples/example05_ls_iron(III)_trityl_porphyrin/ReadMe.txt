@@ -19,10 +19,10 @@ HOW TO RUN
 1) Open Terminal or Command Prompt.
 
 2) Navigate to the root directory of the DipFit program:
-   cd …/DipFit/
+   cd …/DipFit/source_code
    
 3) Run the program by the following command:
-   python main.py /examples/example05_ls_iron(III)_trityl_porphyrin/config_ex05.cfg
+   python main.py examples/example05_ls_iron(III)_trityl_porphyrin/config_ex05.cfg
 
 4) The results of the DipFit analysis will be saved in the folder:
    .../DipFit/examples/example05_ls_iron(III)_trityl_porphyrin/
