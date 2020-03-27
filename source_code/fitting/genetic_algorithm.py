@@ -10,7 +10,7 @@ from fitting.chromosome import Chromosome
 from fitting.generation import Generation
 from fitting.score_function import get_fit
 from fitting.get_parameters import get_parameters
-from fitting.error_estimation import calculate_score_vs_parameters, calculation_error
+from fitting.error_estimation import calculate_numerical_error, calculate_score_vs_parameters, calculate_parameter_errors
 from fitting.graphics.plot_fit import plot_fit, update_fit_plot, close_fit_plot
 from fitting.graphics.plot_score import plot_score, update_score_plot, close_score_plot
 from fitting.parameters2genes import parameters2genes
@@ -78,33 +78,26 @@ class GeneticAlgorithm:
         time_finish = time.time()
         time_elapsed = str(datetime.timedelta(seconds = time_finish - time_start))
         sys.stdout.write('\n')
-        sys.stdout.write('Fitting is finished. Total duration: %s' % (time_elapsed))
-        sys.stdout.write('\n\n')	
+        sys.stdout.write('Fitting is finished. Total duration: %s\n\n' % (time_elapsed))
          
     def validation(self, valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings):   
         if not (valSettings['variables'] == []):
-            sys.stdout.write('Validating the optimized fitting parameters... \n')
+            sys.stdout.write('Validating the optimized fitting parameters...\n')
             time_start = time.time()
             # Determine the calculation error
-            self.calc_error, score_min = calculation_error(self.best_parameters, fitSettings, simulator, expData, spinA, spinB, calcSettings)
-            sys.stdout.write('RMSD calculation error = %f\n' % (self.calc_error))
-            # Set the score threshold
-            if valSettings['threshold']:
-                self.score_threshold = valSettings['threshold'] * score_min
-                score_error = (valSettings['threshold'] - 1.0) * score_min
-                if (score_error < self.calc_error):
-                    sys.stdout.write('Warning: The error threshold is below the calculation error!\n')
-                    self.score_threshold = score_min + self.calc_error
-            else:
-                self.score_threshold = score_min + self.calc_error
-            self.score_vs_parameters, parameter_errors = calculate_score_vs_parameters(self.best_parameters, valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings, self.score_threshold)
+            self.numerical_error = calculate_numerical_error(self.best_parameters, valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)  
+            sys.stdout.write('Numerical error = %f\n' % (self.numerical_error))
+            # Calculate the score in dependence of fitting parameters
+            self.score_vs_parameters = calculate_score_vs_parameters(self.best_parameters, valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)
+            # Calculate the confidence intervals of fitting parameters
+            parameter_errors = calculate_parameter_errors(self.score_vs_parameters, self.best_parameters, valSettings, self.numerical_error)
+            # Store the calculated confidence intervals together with the optimized parameters 
             best_genes = parameters2genes(self.best_parameters)
             self.best_parameters = get_parameters(best_genes, fitSettings['variables']['indices'], fitSettings['variables']['fixed'], parameter_errors)
             time_finish = time.time()
             time_elapsed = str(datetime.timedelta(seconds = time_finish - time_start))
-            sys.stdout.write('Validation is finished. Total duration: %s' % (time_elapsed))
-            sys.stdout.write('\n\n')
-            
+            sys.stdout.write('Validation is finished. Total duration: %s\n\n' % (time_elapsed))
+                     
     def print_optimized_parameters(self):
         sys.stdout.write('Optimized fitting parameters:\n')
         sys.stdout.write("{0:<16s} {1:<16s} {2:<16s} {3:<16s}\n".format('Parameter', 'Value', 'Optimized', 'Precision (+/-)'))

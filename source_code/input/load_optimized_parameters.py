@@ -13,7 +13,7 @@ def chunkstring(string, length):
 def load_optimized_parameters(filepath):
     optimized_parameters = {}
     count = 0
-    file = open(filepath + '/parameters.dat', 'r')
+    file = open(filepath, 'r')
     # Skip a header
     next(file)
     for line in file:

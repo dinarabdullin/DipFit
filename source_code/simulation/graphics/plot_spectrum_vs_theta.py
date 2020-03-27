@@ -19,7 +19,7 @@ def plot_spectrum_vs_theta(xs, ys, theta, ys_theta, ranges=[], xnormalized=False
         axes.set_ylabel('Amplitude')
     else:
         axes.plot(xs, ys, 'k-')
-        if not (ranges == []):
+        if (ranges['f_max']):
             axes.set_xlim(-ranges['f_max'], ranges['f_max'])
             axes.set_ylim(0.0, ranges['spc_max']+0.1)
         else:
@@ -40,7 +40,7 @@ def plot_spectrum_vs_theta(xs, ys, theta, ys_theta, ranges=[], xnormalized=False
         X, Y = np.meshgrid(xs, theta)
         Z = ys_theta
         axes.contour(X, Y, Z, 100, cmap='jet', vmin=np.amin(Z), vmax=np.amax(Z))
-        if not (ranges == []):
+        if (ranges['f_max']):
             axes.set_xlim(-ranges['f_max'], ranges['f_max'])
         else:
             axes.set_xlim(np.amin(xs), np.amax(xs))

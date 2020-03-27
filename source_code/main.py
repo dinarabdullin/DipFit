@@ -48,15 +48,19 @@ if __name__ == '__main__':
             optimizer = GeneticAlgorithm(fitSettings['settings'], expData)
             # Run the fitting
             optimizer.run_optimization(fitSettings, simulator, expData, spinA, spinB, calcSettings)
+        # Save fitting results
+        save_fitting_data(optimizer, expData, fitSettings, outputSettings)
+        # Plot fitting results
+        plot_fitting_data(optimizer, expData, fitSettings, calcSettings, outputSettings)
         # Validate the fitting parameters
         optimizer.validation(valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)
+        # Save validation results
+        save_validation_data(optimizer, valSettings, outputSettings)
+        # Plot validation results
+        plot_validation_data(optimizer, valSettings, fitSettings, outputSettings)
         # Display the optmized fitting parameters
-        optimizer.print_optimized_parameters()
-        # Save fitting results
-        save_fitting_data(optimizer, expData, fitSettings, valSettings, outputSettings)
-        # Plot fitting results
-        plot_fitting_data(optimizer, expData, fitSettings, valSettings, calcSettings, outputSettings)    
-    
+        optimizer.print_optimized_parameters()    
+
     # Validation
     if mode['validation']:
         # Init the fitting mode of the simulator
@@ -67,12 +71,12 @@ if __name__ == '__main__':
         # Run the validation
         optimizer.best_parameters = valSettings['optimized_parameters']
         optimizer.validation(valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)
-        # Display the optmized fitting parameters
-        optimizer.print_optimized_parameters()
         # Save validation results
         save_validation_data(optimizer, valSettings, outputSettings)
         # Plot validation results
         plot_validation_data(optimizer, valSettings, fitSettings, outputSettings)
+        # Display the optmized fitting parameters
+        optimizer.print_optimized_parameters()
            
     # Keep all figures live
     keep_figures_live()

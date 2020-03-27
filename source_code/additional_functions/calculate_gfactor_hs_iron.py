@@ -1,19 +1,68 @@
 '''
-Calculate the g-factor of a high-spin Fe(III) based on its ZFS tensor
-(only if ZFS is much larger than the microwave frequency)
+calculate_gfactor_hs_iron.py
+
+Calculates the g-factor of a high-spin Fe(III) based on its ZFS tensor
+(only for positive ZFS, which is much larger than the Zeeman and thermal energies)
+
+Requirements: Python3, numpy, scipy
 '''
 
-import os
-parent_directory = os.path.dirname(os.getcwd())
 import sys
-sys.path.append(parent_directory)
 import numpy as np
 from scipy import linalg
-from spinphysics.spin_matrices import spin_matrices
-from mathematics.euler2RM import euler2RM
-from supplement.constants import const
 import warnings
 warnings.filterwarnings("ignore",category=RuntimeWarning)
+
+
+const = {}
+const['Hz2MHz'] = 1e-6
+const['GHz2MHz'] = 1e3
+const['wn2MHz'] = 29979.0
+const['bohrMagneton'] = 9.274009994e-24 # J/T
+const['plankConstant'] = 6.626070040e-34 # J*s
+const['Fez'] = const['Hz2MHz'] * const['bohrMagneton'] / const['plankConstant'] # MHz/T
+
+
+def spin_matrices(s):
+	M = int(2*s + 1)
+	SZ = np.zeros((M,M))
+	SP = np.zeros((M,M))
+	SM = np.zeros((M,M))
+	SX = np.zeros((M,M))
+	SY = np.zeros((M,M))
+	SZ = np.diag(np.linspace(-s, s, M)) 
+	for i in range(M-1):
+		x = np.sqrt(float((i+1) * (M - (i+1))))
+		SP[i][i+1] = x
+		SM[i+1][i] = x
+		SX[i][i+1] = 0.5 * x
+		SX[i+1][i] = 0.5 * x
+		SY[i][i+1] = -0.5 * (i+1) * x
+		SY[i+1][i] = 0.5 * (i+1) * x
+	return SZ, SP, SM, SX, SY
+
+
+def euler2RM(euler):
+	alpha = euler[0]
+	beta = euler[1]
+	gamma = euler[2]
+	sa = np.sin(alpha)
+	ca = np.cos(alpha)
+	sb = np.sin(beta)
+	cb = np.cos(beta)
+	sg = np.sin(gamma)
+	cg = np.cos(gamma)
+	RM = np.zeros((3,3))
+	RM[0][0] = cg*cb*ca - sg*sa
+	RM[0][1] = cg*cb*sa + sg*ca
+	RM[0][2] = -cg*sb
+	RM[1][0] = -sg*cb*ca - cg*sa
+	RM[1][1] = -sg*cb*sa + cg*ca
+	RM[1][2] = sg*sb
+	RM[2][0] = sb*ca
+	RM[2][1] = sb*sa
+	RM[2][2] = cb
+	return RM
 
 
 def gfactor_hs_iron(ga, zfs, fmw):

@@ -16,6 +16,8 @@ def plot_spectrum_vs_par_2d(xs, par, ys, ranges=[], xnormalized=False, xn=[], sa
     axes = fig.gca()
     Nx = xs.size
     Npar = par.size
+    Nskip = Nskip = int((Npar-1) / 10) + 1
+    count = 0
     # Set the value of y-shift
     if (invert_paxis):
         yshift = -0.5 * np.amax(ys)
@@ -26,7 +28,11 @@ def plot_spectrum_vs_par_2d(xs, par, ys, ranges=[], xnormalized=False, xn=[], sa
     if xnormalized:
         for i in range(Npar):
             axes.plot(xn, ys[i]+baseline, 'k-')          
-            plt.text(np.amax(xn) + 0.5, baseline[0] - 0.07, str(int(par[i])))
+            if (count == 0):
+                plt.text(np.amax(xn) + 0.5, baseline[0] - 0.07, str(int(par[i])))
+            count = count + 1
+            if (count == Nskip):
+                count = 0
             baseline = baseline + yshift * np.ones(Nx)
             if (i == Npar-1):
                 plt.text(np.amax(xn) + 0.5, baseline[0], par_label)
@@ -37,10 +43,14 @@ def plot_spectrum_vs_par_2d(xs, par, ys, ranges=[], xnormalized=False, xn=[], sa
     else:
         for i in range(Npar):
             axes.plot(xs, ys[i]+baseline, 'k-')
-            plt.text(np.amax(xs) + 0.5, baseline[0] - 0.07, str(int(par[i])))
+            if (count == 0):
+                plt.text(np.amax(xs) + 0.5, baseline[0] - 0.07, str(int(par[i])))
+            count = count + 1
+            if (count == Nskip):
+                count = 0
             baseline = baseline + yshift * np.ones(Nx)
-            if (i == Npar-1):
-                plt.text(np.amax(xs) + 0.5, baseline[0], par_label)
+            if (i == Npar-1):   
+                plt.text(np.amax(xs) + 0.5, baseline[0] + 0.4*Nskip*yshift, par_label)
         axes.set_xlim(np.amin(xs), np.amax(xs))
         axes.set_xlabel(r'Frequency (MHz)')
     #axes.set_ylabel('Amplitude')   

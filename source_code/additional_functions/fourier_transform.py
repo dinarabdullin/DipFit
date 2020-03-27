@@ -1,5 +1,9 @@
 '''
-Calculate FFT and inverse FFT
+fourier_transform.py
+
+Calculates FFT and inverse FFT
+
+Requirements: Python3, numpy, scipy, matplotlib
 '''
 
 import os
@@ -25,6 +29,16 @@ rcParams['font.size'] = 14
 linestyles = ['k-', 'r-', 'b-', 'm-', 'c-']
 
 
+default_parameters = {
+    'complex': True, 
+    'background_start': -50,
+    'appodization': True,
+    'zerofilling': 1,
+    'scale_first_point': True,   
+    'output': 'real'
+}
+
+
 def get_path(message):
     app = wx.App(None) 
     dialog = wx.FileDialog(None, message, wildcard='*.dat', style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
@@ -47,6 +61,87 @@ def load_data(filename, column_number):
     xv = np.array(x)
     yv = np.array(y)
     return [xv, yv]
+
+
+def read_fft_parameters():
+    parameters = {}
+    print('\nEnter FFT settings:\n')
+    var = input("Complex input data: True or False (default: %s)\n" % default_parameters['complex'])
+    if (var == ""):
+        parameters['complex'] = default_parameters['complex']
+    else:
+        if (var == 'True') or (var == 'true'):
+            parameters['complex'] = True
+        elif (var == 'False') or (var == 'false'):
+            parameters['complex'] = False
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    var = input("Background start counted from the last data point (default: %d)\n" % default_parameters['background_start'])
+    if (var == ""):
+        parameters['background_start'] = default_parameters['background_start']
+    else:
+        val = [int(i) for i in var.split(' ')]
+        if len(val) == 1:
+            if val[0] > 0:
+                val[0] = -val[0]
+            parameters['background_start'] = val[0]
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    var = input("Appodization: True or False (default: %s)\n" % default_parameters['appodization'])
+    if (var == ""):
+        parameters['appodization'] = default_parameters['appodization']
+    else:
+        if (var == 'True') or (var == 'true'):
+            parameters['appodization'] = True
+        elif (var == 'False') or (var == 'false'):
+            parameters['appodization'] = False
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    var = input("Zero filling: [entered value] x [number of data points] (default: %d)\n" % default_parameters['zerofilling'])
+    if (var == ""):
+        parameters['zerofilling'] = default_parameters['zerofilling']
+    else:
+        val = [int(i) for i in var.split(' ')]
+        if len(val) == 1:
+            if val[0] >= 0:
+                parameters['zerofilling'] = val[0]
+            else:
+                raise ValueError('Illelgible value!')
+                sys.exit(1)
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    var = input("Scale firt data point: True or False (default: %s)\n" % default_parameters['scale_first_point'])
+    if (var == ""):
+        parameters['scale_first_point'] = default_parameters['scale_first_point']
+    else:
+        if (var == 'True') or (var == 'true'):
+            parameters['scale_first_point'] = True
+        elif (var == 'False') or (var == 'false'):
+            parameters['scale_first_point'] = False
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    var = input("Output data format: original, real, imaginary, absolute (default: %s)\n" % default_parameters['output'])
+    if (var == ""):
+        parameters['output'] = default_parameters['output']
+    else:
+        if (var == 'Original') or (var == 'original'):
+            parameters['output'] = 'original'
+        elif (var == 'Real') or (var == 'real'):
+            parameters['output'] = 'real'
+        elif (var == 'imaginary') or (var == 'imaginary'):
+            parameters['output'] = 'imaginary'
+        elif (var == 'Absolute') or (var == 'absolute'):
+            parameters['output'] = 'absolute' 
+        else:
+            raise ValueError('Illelgible value!')
+            sys.exit(1)
+    print(parameters)
+    return parameters
 
 
 def crop_signal(x, y, xrange):
@@ -126,15 +221,15 @@ def offset_correction(sig, bckg_start):
     return [sigShift, bckg]
 
 
-def appodization(sig, mode='None', parameters={}):
+def appodization(sig, activate):
     sigApp = []
-    if (mode == 'None'):
-        window = np.ones(sig.size)
-        sigApp = sig
-    if (mode == 'Hamming'):
+    if (activate):
         hamming = np.hamming(2*sig.size-1)
         window = hamming[-sig.size:]
         sigApp = window * sig
+    else:
+        window = np.ones(sig.size)
+        sigApp = sig
     return [sigApp, window]
 
 
@@ -164,13 +259,13 @@ def FFT(t, sigRe, sigIm, parameters, fRef = [], spcRef = []):
     else:
         sig = sigRe
     # Shift the spectrum such that the last time points have a zero amplitude
-    [sigShift, bckg] = offset_correction(sig, parameters['bckg_start'])
+    [sigShift, bckg] = offset_correction(sig, parameters['background_start'])
     #plot_timetrace([t, t, t], [sigRe, bckg, sigShift], ['real(signal)', 'bckg', 'real(signal) - bckg'])
     # Apply the appodization
-    sigApp, window = appodization(sigShift, mode=parameters['appod_func'], parameters={})
+    sigApp, window = appodization(sigShift, parameters['appodization'])
     #plot_timetrace([t, t, t], [sigShift, window, sigApp], ['signal', 'window', 'signal * window']) 
     # Apply zero-padding
-    [sigZF, tZF] = zerofilling(t, sigApp, parameters['zerofil_length'])
+    [sigZF, tZF] = zerofilling(t, sigApp, parameters['zerofilling'])
     #plot_timetrace([t, tZF], [sigApp, sigZF], ['signal', 'signal + zeros'])
     # Scale first point by 1/2
     if parameters['scale_first_point']:
@@ -189,13 +284,13 @@ def FFT(t, sigRe, sigIm, parameters, fRef = [], spcRef = []):
     spcIm = np.imag(spcShift)
     spcAbs = np.abs(spcShift)
     # Set the data to be returned
-    if (parameters['output_data'] == 'orig'):
+    if (parameters['output'] == 'original'):
         ans = spc
-    elif (parameters['output_data'] == 'real'):
+    elif (parameters['output'] == 'real'):
         ans = spcRe
-    elif (parameters['output_data'] == 'imag'):
+    elif (parameters['output'] == 'imaginary'):
         ans = spcIm
-    elif (parameters['output_data'] == 'abs'):
+    elif (parameters['output'] == 'absolute'):
         ans = spcAbs
     # Plot the result
     if (fRef == []):
@@ -229,8 +324,7 @@ def inverse_FFT(f, spc, tRef = [], sigRef = []):
 
 if __name__ == '__main__':
     # Load the time trace
-    filename_input_timetrace = get_path("Open the file with a background-corrected time trace")
-    #filename_input_timetrace = os.path.dirname(os.getcwd()) + "/examples/example02_hs_iron(III)_nitroxide_porphyrin/timetrace.dat"
+    filename_input_timetrace = get_path("Load a time trace")
     if (filename_input_timetrace == ""):
         raise ValueError('Could not load the time trace!')
         sys.exit(1)
@@ -238,39 +332,21 @@ if __name__ == '__main__':
         print('\nThe time trace is loaded from \n%s' % filename_input_timetrace)
         [t, sigRe] = load_data(filename_input_timetrace, 1)
         sigIm = np.zeros(sigRe.size)
-
     # Load the spectrum
-    filename_input_spectrum = get_path("Open the file with a spectrum (optional)")
-    #filename_input_spectrum = os.path.dirname(os.getcwd()) + "/examples/example02_hs_iron(III)_nitroxide_porphyrin/spc.dat"
+    filename_input_spectrum = get_path("Load a spectrum (optional)")
     if (filename_input_spectrum == ""):
         print('\nNo spectrum was specified!')
         fRef = []
         spcRef = []
     else:
         print('\nThe spectrum is loaded from \n%s' % filename_input_spectrum)
-        [fRef, spcRef] = load_data(filename_input_spectrum, 1)
-    
-    # Calculate the FFT of the time trace
-    # parameters| complex           | True / False
-    #             bckg_start        | Any integer number below the number of points
-    #             appod_func        | None / Hamming
-    #             zerofil_length    | Any integer number
-    #             scale_first_point | True / False
-    #             output_data       | orig / real / imag / abs
-    parameters = {}
-    parameters['complex'] = False 
-    parameters['bckg_start'] = -50 
-    parameters['appod_func'] = 'Hamming'
-    parameters['zerofil_length'] = 3 
-    parameters['scale_first_point'] = True
-    parameters['output_data'] = 'real' 
-    parameters['save_data'] = True
+        [fRef, spcRef] = load_data(filename_input_spectrum, 1) 
+    # Enter the FFT parameters
+    parameters = read_fft_parameters() 
+    # Calculate the FFT of the dipolar time trace
     [f, spc, fRaw, spcRaw] = FFT(t, sigRe, sigIm, parameters, fRef, spcRef)
-    if parameters['save_data']:
-        filename_output_spectrum = os.path.splitext(filename_input_timetrace)[0] + "_spc.dat"
-        save_spectrum(filename_output_spectrum, f, spc)
-    
-    # ## The inverse FFT of the spectrum
-    # #[tInv, sigReInv, sigImInv] = inverse_FFT(fRaw, spcRaw, t, sigRe)
-
+    filename_output_spectrum = os.path.splitext(filename_input_timetrace)[0] + "_fft.dat"
+    save_spectrum(filename_output_spectrum, f, spc)
+    ## The inverse FFT of the spectrum
+    #[tInv, sigReInv, sigImInv] = inverse_FFT(fRaw, spcRaw, t, sigRe)
     keep_figures_live()

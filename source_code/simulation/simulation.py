@@ -438,7 +438,8 @@ class Simulator:
             self.spc_vs_phi = self.dipolar_spectrum_vs_phi(simSettings['variables'], spinA, spinB)
             sys.stdout.write('[DONE]\n')
         # Calculate a dipolar spectrum vs temperature
-        if simSettings['modes']['spc_vs_temp'] and calcSettings['g_selectivity'] and (spinB['type'] == "anisotropic"):
+        #if simSettings['modes']['spc_vs_temp'] and calcSettings['g_selectivity'] and (spinB['type'] == "anisotropic"):
+        if simSettings['modes']['spc_vs_temp']:
             sys.stdout.write('Calculating dipolar spectrum vs temperature... ')
             self.temp_bins = simSettings['settings']['temp_bins']
             self.spc_vs_temp, self.g, self.depth_vs_temp = self.dipolar_spectrum_vs_temp(fdd, spinA, spinB, calcSettings)

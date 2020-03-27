@@ -29,23 +29,26 @@ def read_calculation_mode(config):
         mode['simulation'] = 0
         mode['fitting'] = 0
         mode['validation'] = 1
+    else:
+        raise ValueError('Illelgible value of mode!')
+        sys.exit(1)
     return mode
 
 
 def read_experimental_parameters(config):
-	expData = {}  
-	expData['path_spectrum'] = config.path_spectrum
-	expData['path_timetrace'] = config.path_timetrace
-	expData['t'] = []
-	expData['sig'] = []
-	expData['f'] = []
-	expData['spc'] = []
-	if expData['path_spectrum']:
-		f, spc = load_spectrum(expData['path_spectrum'])
-		expData['f'], expData['spc'] = symmetric_boundaries(f, spc)
-	if expData['path_timetrace']:
-		expData['t'], expData['sig'] = load_timetrace(expData['path_timetrace'])
-	return expData
+    expData = {}  
+    expData['path_spectrum'] = config.path_spectrum
+    expData['path_timetrace'] = config.path_timetrace
+    expData['t'] = []
+    expData['sig'] = []
+    expData['f'] = []
+    expData['spc'] = []
+    if not (expData['path_spectrum']==""):
+        f, spc = load_spectrum(expData['path_spectrum'])
+        expData['f'], expData['spc'] = symmetric_boundaries(f, spc)
+    if not (expData['path_timetrace']==""):
+        expData['t'], expData['sig'] = load_timetrace(expData['path_timetrace'])
+    return expData
 
 
 def read_spin_parameters(config):
@@ -154,7 +157,7 @@ def read_fitting_settings(config, expData):
     if (fitSettings['settings']['fitted_data'] == 'spectrum') and (expData['f'] == []):
         raise ValueError('No spectrum was specified!')
         sys.exit(1)
-    elif (fitSettings['settings']['fitted_data'] == 'timetrace') and (expData['f'] == []):
+    elif (fitSettings['settings']['fitted_data'] == 'timetrace') and (expData['t'] == []):
         raise ValueError('No time trace was specified!')
         sys.exit(1)
     return fitSettings
@@ -164,8 +167,7 @@ def read_validation_settings(config, mode):
     valSettings = {}
     valSettings['variables'] = config.validation.variables
     valSettings['Ns'] = int(config.validation.Ns)
-    valSettings['threshold'] = 0.01 * float(config.validation.threshold)
-    valSettings['display_threshold'] = int(config.validation.display_threshold)
+    valSettings['threshold'] = float(config.validation.threshold)
     path_optimized_parameters = config.validation.path_optimized_parameters
     if not (path_optimized_parameters == "") and (mode['validation']):
         valSettings['optimized_parameters'] = load_optimized_parameters(path_optimized_parameters)
@@ -182,8 +184,9 @@ def read_calculation_settings(config, expData):
     calcSettings['f_max'] = float(config.calculation_settings.fmax)
     calcSettings['t_min'] = float(config.calculation_settings.tmin)
     calcSettings['t_max'] = float(config.calculation_settings.tmax)
-    calcSettings['magnetic_field'] = float(config.calculation_settings.magnetic_field)
     calcSettings['g_selectivity'] = int(config.calculation_settings.g_selectivity)
+    if calcSettings['g_selectivity']:
+        calcSettings['magnetic_field'] = float(config.calculation_settings.magnetic_field)
     # Set the maximal amplitude of the spectrum and the maximal dipolar frequency
     if not (expData['f'] == []):
         if calcSettings['f_max']:
@@ -209,7 +212,8 @@ def read_output_settings(config):
 
     
 def read_config(filepath):
-    sys.stdout.write('\nReading out the configuration file... ') 
+    sys.stdout.write('\n') 
+    sys.stdout.write('Reading out the configuration file... ') 
     mode = {}
     expData = {}
     spinA = {}
@@ -231,6 +235,6 @@ def read_config(filepath):
             valSettings = read_validation_settings(config, mode)
         calcSettings = read_calculation_settings(config, expData)
         outputSettings = read_output_settings(config)
-    sys.stdout.write('[DONE]\n')
+    sys.stdout.write('[DONE]\n\n')
     return [mode, expData, spinA, spinB, simSettings, fitSettings, valSettings, calcSettings, outputSettings]
     

@@ -25,12 +25,12 @@ def plot_spectrum_vs_par_3d(xs, par, ys, ranges=[], xnormalized=False, xn=[],
         axes.set_xlim(np.amin(xn), np.amax(xn))
         axes.set_ylim(np.amin(par), np.amax(par))
         axes.set_zlim(0.0, np.amax(ys)+0.1)
-        axes.set_xlabel(r'$\nu_{dd}$ ($\nu_{0}$)')
-        axes.set_ylabel(par_label)
-        axes.set_zlabel('Amplitude')
+        axes.set_xlabel(r'$\nu_{dd}$ ($\nu_{0}$)', labelpad=20)
+        axes.set_ylabel(par_label, labelpad=20)
+        axes.set_zlabel('Amplitude', labelpad=20)
     else:
         for i in range(Npar):
-            if not (ranges == []):
+            if (ranges['f_max']):
                 idx = [j for j in range(xs.size) if (xs[j] >= -ranges['f_max']) and (xs[j] <= ranges['f_max'])]
                 xs2 = np.array([xs[j] for j in idx])
                 ys2 = np.array([ys[i][j] for j in idx])
@@ -41,9 +41,11 @@ def plot_spectrum_vs_par_3d(xs, par, ys, ranges=[], xnormalized=False, xn=[],
                 axes.set_xlim(np.amin(xs), np.amax(xs))
         axes.set_ylim(np.amin(par), np.amax(par))      
         axes.set_zlim(0.0, np.amax(ys)+0.1)
-        axes.set_xlabel(r'Frequency (MHz)')
-        axes.set_ylabel(par_label)
-        axes.set_zlabel('Amplitude')
+        axes.set_xlabel(r'Frequency (MHz)', labelpad=20)
+        axes.set_ylabel(par_label, labelpad=20)
+        axes.set_zlabel('Amplitude', labelpad=20)
+    axes.tick_params(axis='y', which='major', pad=10)
+    axes.tick_params(axis='z', which='major', pad=10)
     axes.view_init(elev=45, azim=-85)
     if (invert_paxis):
         axes.invert_yaxis()
