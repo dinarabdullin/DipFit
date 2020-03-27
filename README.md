@@ -10,7 +10,7 @@ In the fitting mode, the experimental PDS time trace / spectrum is fitted by mea
 
 In the validation mode, the results of the fitting are validated via the calculation of the confidence intervals for the optimized fitting parameters.
 
-Further description of the program can be found in the manual and the papers below.
+Further description of the program can be found in the Manual and the papers below.
 
 General Information
 =========
