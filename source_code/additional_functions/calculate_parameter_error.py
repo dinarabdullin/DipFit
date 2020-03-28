@@ -108,37 +108,43 @@ def calculate_confidence_interval(x_data, y_data, x_name, threshold, x_opt, num_
     func = partial(gauss_fit, x0=x_opt, y0=y_opt)
     popt, pcov = curve_fit(func, x_data_interpolated, y_data_interpolated)
     # Determine the confidence interval
+    a = abs(popt[0])
     dx_opt = abs(popt[1])
     x_error = threshold * dx_opt
-    #print('Confidence interval of %s: %f (%d*sigma level)' % (x_name, x_error, threshold))
     x_left = x_opt - x_error
     x_right = x_opt + x_error
-    if (x_left >= x_min) and (x_right <= x_max):
-        x_error_final = x_error
-        idx_left = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_left))
-        idx_right = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_right))
-        y_left = y_data_interpolated[idx_left]
-        y_right = y_data_interpolated[idx_right]
-        y_dev_left = abs(y_opt - y_left)
-        y_dev_right = abs(y_opt - y_right)
-        y_dev = np.amin([y_dev_left, y_dev_right])
-    elif (x_left < x_min) and (x_right <= x_max):
-        x_left = x_min
-        x_error_final = x_error
-        idx_right = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_right))
-        y_right = y_data_interpolated[idx_right]
-        y_dev = abs(y_opt - y_right)
-    elif (x_left >= x_min) and (x_right > x_max):
-        x_right = x_max
-        x_error_final = x_error
-        idx_left = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_left))
-        y_left = y_data_interpolated[idx_left]
-        y_dev = abs(y_opt - y_left)
-    elif (x_left < x_min) and (x_right > x_max):
+    if a <= 0.2 * np.amin(y_data_interpolated):
         x_left = x_min
         x_right = x_max
         x_error_final = np.nan
         y_dev = np.nan
+    else:
+        if (x_left >= x_min) and (x_right <= x_max):
+            x_error_final = x_error
+            idx_left = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_left))
+            idx_right = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_right))
+            y_left = y_data_interpolated[idx_left]
+            y_right = y_data_interpolated[idx_right]
+            y_dev_left = abs(y_opt - y_left)
+            y_dev_right = abs(y_opt - y_right)
+            y_dev = np.amin([y_dev_left, y_dev_right])
+        elif (x_left < x_min) and (x_right <= x_max):
+            x_left = x_min
+            x_error_final = x_error
+            idx_right = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_right))
+            y_right = y_data_interpolated[idx_right]
+            y_dev = abs(y_opt - y_right)
+        elif (x_left >= x_min) and (x_right > x_max):
+            x_right = x_max
+            x_error_final = x_error
+            idx_left = min(range(len(x_data_interpolated)), key=lambda i: abs(x_data_interpolated[i]-x_left))
+            y_left = y_data_interpolated[idx_left]
+            y_dev = abs(y_opt - y_left)
+        elif (x_left < x_min) and (x_right > x_max):
+            x_left = x_min
+            x_right = x_max
+            x_error_final = np.nan
+            y_dev = np.nan
     print('Confidence interval of %s: %f (%d*sigma level)' % (x_name,x_error_final, threshold))
     # Check that the numerical error is inside the RMSD threshold
     if not np.isnan(num_error) and not np.isnan(y_dev):
