@@ -118,6 +118,7 @@ def calculate_parameter_error(x_data, y_data, x_name, threshold, x_opt, numerica
     func = partial(gauss_fit, x0=x_opt, y0=y_opt)
     popt, pcov = curve_fit(func, x_data_interpolated, y_data_interpolated)
     # Determine the confidence interval
+    a = abs(popt[0])
     dx_opt = abs(popt[1])
     x_error = threshold * dx_opt
     x_left = x_opt - x_error
