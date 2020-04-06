@@ -8,21 +8,21 @@ import datetime
 import shutil
 
 
-def make_output_directory(outputSettings, configPath):
-    if outputSettings['save_data']:
-        parentDir = outputSettings['directory']
-        configDir, configName = os.path.split(os.path.abspath(configPath))
-        if (parentDir):
-            dir = parentDir
+def make_output_directory(output_settings, config_path):
+    if output_settings['save_data']:
+        parent_directory = output_settings['directory']
+        config_directory, config_name = os.path.split(os.path.abspath(config_path))
+        if (parent_directory):
+            output_directory = parent_directory
         else:
-            dir = configDir
+            output_directory = config_directory
         now = datetime.datetime.now()
         folder = now.strftime("%Y-%m-%d_%H-%M")
-        dir = dir + "/" + folder + "/"
+        output_directory = output_directory + "/" + folder + "/"
         try:
-            os.makedirs(dir)
+            os.makedirs(output_directory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        shutil.copy2(configPath, dir+configName)
-        outputSettings['directory'] = dir
+        shutil.copy2(config_path, output_directory + config_name)
+        output_settings['directory'] = output_directory

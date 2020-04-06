@@ -7,8 +7,7 @@ import numpy as np
 import time
 import datetime
 import copy
-from mathematics.rand_points_on_sphere import rand_points_on_sphere
-from mathematics.euler2RM import euler2RM
+from mathematics.random_points_on_sphere import random_points_on_sphere
 from mathematics.spherical2cartesian import spherical2cartesian
 from mathematics.rmsd import rmsd
 from spinphysics.effective_gfactor import effective_gfactor
@@ -19,11 +18,12 @@ from supplement.constants import const
 
 class Simulator:
 
-    def __init__(self, calcSettings):
-        self.Ns = calcSettings['Ns']
-        self.r_distr = calcSettings['r_distr']
-        self.xi_distr = calcSettings['xi_distr']
-        self.phi_distr = calcSettings['phi_distr']   
+    def __init__(self, calc_settings):
+        self.Ns = calc_settings['Ns']
+        self.r_distr = calc_settings['r_distr']
+        self.xi_distr = calc_settings['xi_distr']
+        self.phi_distr = calc_settings['phi_distr']  
+        self.spc_max = calc_settings['spc_max']
         self.field = []
         self.gA = []
         self.gB = []
@@ -40,7 +40,6 @@ class Simulator:
         self.phi_bins = []
         self.temp_bins = []
         self.spc = []
-        self.spc_max = calcSettings['spc_max']
         self.spc_vs_theta = []
         self.spc_vs_xi = []
         self.spc_vs_phi = []
@@ -50,69 +49,69 @@ class Simulator:
         self.g = []
         self.depth_vs_temp = []    
 
-    def set_faxis(self, fExp, gA=[], gB=[], var={}):
-        if not (fExp == []):
-            f = np.array(fExp)
+    def set_faxis(self, f_exp, gA=[], gB=[], parameters={}):
+        if not (f_exp == []):
+            f = np.array(f_exp)
         else:
             # Determine the minimal value of r
-            rMin = 0.0
-            if (var['r_width'] > 0):
+            r_min = 0.0
+            if (parameters['r_width'] > 0):
                 if (self.r_distr == 'normal'):
-                    r = var['r_mean'] + var['r_width'] * np.random.randn(self.Ns)
+                    r = parameters['r_mean'] + parameters['r_width'] * np.random.randn(self.Ns)
                 elif (self.r_distr == 'uniform'):
-                    r = var['r_mean'] + var['r_width'] * (0.5 - np.random.rand(self.Ns))
-                rMin = np.amin(r) 
+                    r = parameters['r_mean'] + parameters['r_width'] * (0.5 - np.random.rand(self.Ns))
+                r_min = np.amin(r) 
             else:
-                rMin = var['r_mean']
+                r_min = parameters['r_mean']
             # Determine the maximal values of g-factors
-            gAMax = np.amax(gA)
-            gBMax = np.amax(gB)
+            gA_max = np.amax(gA)
+            gB_max = np.amax(gB)
             # Estimate the max dipolar frequency
-            fddMax = 2 * const['Fdd'] * gAMax * gBMax / rMin**3 
+            fdd_max = 2 * const['Fdd'] * gA_max * gB_max / r_min**3 
             # Set the frequency axis
-            fMax = np.around(fddMax) + 5.0
-            fMin = -fMax
-            fStep = 0.1
-            Nf = int(np.around((fMax - fMin) / fStep)) + 1
-            f = np.linspace(fMin, fMax, Nf)
+            f_max = np.around(fdd_max) + 5.0
+            f_min = -f_max
+            f_step = 0.1
+            Nf = int(np.around((f_max - f_min) / f_step)) + 1
+            f = np.linspace(f_min, f_max, Nf)
         return f
 
-    def normalize_faxis(self, var):
+    def normalize_faxis(self, parameters):
         # Determine the reference frequency
-        fddRef = const['Fdd'] * const['ge'] * const['ge'] / var['r_mean']**3 
-        # Create an array with the normalized frequencies
+        fdd_ref = const['Fdd'] * const['ge'] * const['ge'] / parameters['r_mean']**3 
+        # Normalize the frequency axis by the reference frequency
         Nf = self.f.size
         fn = np.zeros(Nf)
         for i in range(Nf):
-            fn[i] = self.f[i] / fddRef
+            fn[i] = self.f[i] / fdd_ref
         return fn 
         
-    def set_taxis(self, tExp, gA=[], gB=[], var={}):
-        if not (tExp == []):
-            t = np.array(tExp)
+    def set_taxis(self, t_exp, gA=[], gB=[], parameters={}):
+        if not (t_exp == []):
+            t = np.array(t_exp)
         else:
             # Determine the max value of r
-            if (var['r_width'] > 0):
+            if (parameters['r_width'] > 0):
                 if (self.r_distr == 'normal'):
-                    r = var['r_mean'] + var['r_width'] * np.random.randn(self.Ns)
+                    r = parameters['r_mean'] + parameters['r_width'] * np.random.randn(self.Ns)
                 elif (self.r_distr == 'uniform'):
-                    r = var['r_mean'] + var['r_width'] * (0.5 - np.random.rand(self.Ns))
-                rMax = np.amax(r) 
+                    r = parameters['r_mean'] + parameters['r_width'] * (0.5 - np.random.rand(self.Ns))
+                r_max = np.amax(r) 
             else:
-                rMax = var['r_mean']
+                r_max = parameters['r_mean']
             # Determine the mininimal values of g-factors
-            gAMin = np.amin(gA)
-            gBMin = np.amin(gB)
+            gA_min = np.amin(gA)
+            gB_min = np.amin(gB)
             # Estimate the min dipolar frequency
-            fddMin = const['Fdd'] * gAMin * gBMin / rMax**3
+            fdd_min = const['Fdd'] * gA_min * gB_min / r_max**3
             # Estimate the max period of dipolar oscilation
-            tddMax = 1 / fddMin
+            tdd_max = 1 / fdd_min
             # Set the time axis
-            tMin = 0.0
-            tMax = 3 * tddMax
-            tStep = 0.008
-            Nt = int(np.around((tMax - tMin) / tStep)) + 1
-            t = np.linspace(tMin, tMax, Nt)
+            t_min = 0.0
+            t_max = 3 * tdd_max
+            t_step = 0.008
+            Nt = int(np.around((t_max - t_min) / t_step)) + 1
+            t = np.linspace(t_min, t_max, Nt)
         return t       
 
     def set_gaxis(self, g):
@@ -123,16 +122,16 @@ class Simulator:
         g = np.linspace(gMin, gMax, Ng)
         return g
           
-    def set_modulation_depth(self, sigExp):
-        if not (sigExp == []):
-            depth = 1.0 - np.mean(sigExp[-10:])
+    def set_modulation_depth(self, sig_exp, mod_depth = 0):
+        if not (sig_exp == []):
+            depth = 1.0 - np.mean(sig_exp[-10:])
         else:
-            depth = 0
+            depth = mod_depth
         return depth
         
     def spin_ensemble(self, spinA, spinB):
         # Directions of the magnetic field in the frame of spin B
-        fieldB = rand_points_on_sphere(self.Ns)
+        fieldB = random_points_on_sphere(self.Ns)
         # Effective g-factors of spin B 
         gB = effective_gfactor(spinB['g'], fieldB)   
         # Quantization axes of spin B
@@ -149,44 +148,44 @@ class Simulator:
             qA = fieldB
         return [fieldB, gA, gB, qA, qB]
     
-    def geometric_parameters(self, var):
+    def geometric_parameters(self, parameters):
         r = []
         xi = []
         phi = []
-        if (var['r_width'] > 0):
+        if (parameters['r_width'] > 0):
             if (self.r_distr == 'normal'):
-                r = var['r_mean'] + var['r_width'] * np.random.randn(self.Ns)
+                r = parameters['r_mean'] + parameters['r_width'] * np.random.randn(self.Ns)
             elif (self.r_distr == 'uniform'):
-                r = var['r_mean'] + var['r_width'] * (0.5 - np.random.rand(self.Ns))
+                r = parameters['r_mean'] + parameters['r_width'] * (0.5 - np.random.rand(self.Ns))
         else:
-            r = var['r_mean'] * np.ones(self.Ns)
-        if (var['xi_width'] > 0):
+            r = parameters['r_mean'] * np.ones(self.Ns)
+        if (parameters['xi_width'] > 0):
             if (self.xi_distr == 'normal'):
-                xi = var['xi_mean'] + var['xi_width'] * np.random.randn(self.Ns)
+                xi = parameters['xi_mean'] + parameters['xi_width'] * np.random.randn(self.Ns)
             elif (self.xi_distr == 'uniform'):
-                xi = var['xi_mean'] + var['xi_width'] * (0.5 - np.random.rand(self.Ns))
+                xi = parameters['xi_mean'] + parameters['xi_width'] * (0.5 - np.random.rand(self.Ns))
         else:
-            xi = var['xi_mean'] * np.ones(self.Ns)	
-        if (var['phi_width'] > 0):
+            xi = parameters['xi_mean'] * np.ones(self.Ns)	
+        if (parameters['phi_width'] > 0):
             if (self.phi_distr == 'normal'):
-                phi = var['phi_mean'] + var['phi_width'] * np.random.randn(self.Ns)
+                phi = parameters['phi_mean'] + parameters['phi_width'] * np.random.randn(self.Ns)
             elif (self.phi_distr == 'uniform'):
-                phi = var['phi_mean'] + var['phi_width'] * (0.5 - np.random.rand(self.Ns))
+                phi = parameters['phi_mean'] + parameters['phi_width'] * (0.5 - np.random.rand(self.Ns))
         else:
-            phi = var['phi_mean'] * np.ones(self.Ns)
+            phi = parameters['phi_mean'] * np.ones(self.Ns)
         # Check that all distances are above 0
         for i in range(self.Ns):
-            if (r[i] < 0) and (var['r_width'] > 0):
+            if (r[i] < 0) and (parameters['r_width'] > 0):
                 while True:
                     if (self.r_distr == 'normal'):
-                        r[i] = var['r_mean'] + var['r_width'] * np.random.randn()
+                        r[i] = parameters['r_mean'] + parameters['r_width'] * np.random.randn()
                     elif (self.r_distr == 'uniform'):
-                        r[i] = var['r_mean'] + var['r_width'] * (0.5 - np.random.rand())
+                        r[i] = parameters['r_mean'] + parameters['r_width'] * (0.5 - np.random.rand())
                     if (r[i] > 1.0):
                         break
         return [r, xi, phi]    
 
-    def dipolar_frequencies(self, var, spinA, spinB, gA=[], gB=[], qA=[], qB=[], calculateTheta=False):	
+    def dipolar_frequencies(self, parameters, spinA, spinB, gA=[], gB=[], qA=[], qB=[], calculate_theta=False):	
         # Parameters of the spin ensemble
         if gA == []:
             gA = self.gA
@@ -197,7 +196,7 @@ class Simulator:
         if qB == []:
             qB = self.qB    
         # Geometric parameters
-        r, xi, phi = self.geometric_parameters(var)	    
+        r, xi, phi = self.geometric_parameters(parameters)	    
         # Distance vector
         rv_spherical = np.array([np.ones(self.Ns), xi, phi])
         rv_spherical = rv_spherical.T
@@ -216,7 +215,7 @@ class Simulator:
                 rv_A = rv_field
                 rv_B = np.dot(rv[i], qB[i].T)
                 fdd[i] = const['Fdd'] * gA[i] * gB[i] * (1.0 - 3.0 * rv_A * rv_B) / r[i]**3
-            if (calculateTheta):
+            if (calculate_theta):
                 theta[i] = np.arccos(rv_field) * const['rad2deg']
                 if (theta[i] < 0.0):
                     theta[i] = -theta[i]
@@ -268,9 +267,9 @@ class Simulator:
         if (weights == []):
             weights = 1.0 * np.ones(self.Ns) 
         # Create frequency bins
-        fmax = max(np.amax(fdd), np.abs(np.amin(fdd)))
+        fdd_max = max(np.amax(fdd), np.abs(np.amin(fdd)))
         df = 0.01
-        Nf = int(fmax // df) + 1
+        Nf = int(fdd_max // df) + 1
         fb = np.linspace(-float(Nf)*df, float(Nf)*df, 2*Nf+1)
         fv = np.linspace(-(float(Nf)-0.5)*df, (float(Nf)-0.5)*df, 2*Nf)
         # Calculate the distribution of dipolar frequencies
@@ -291,12 +290,12 @@ class Simulator:
     def dipolar_spectrum_vs_theta(self, fdd, theta, weights=[]):
         # Set the frequency axis
         Nf = self.Nf
-        fMin = self.f[0]
-        fStep = self.f[1] - self.f[0]
+        fdd_min = self.f[0]
+        fdd_step = self.f[1] - self.f[0]
         # Set parameters of the theta axis
         Ntheta = self.theta_bins.size
-        thetaMin = self.theta_bins[0]
-        thetaStep = self.theta_bins[1] - self.theta_bins[0]
+        theta_min = self.theta_bins[0]
+        theta_step = self.theta_bins[1] - self.theta_bins[0]
         # Set weights
         if (weights == []):
             weights = self.pB
@@ -305,47 +304,47 @@ class Simulator:
         #  Calculate a dipolar spectrum vs theta
         spc_vs_theta = np.zeros((Ntheta,Nf))
         for i in range(self.Ns):
-            idx_f1 = int(np.around((fdd[i] - fMin) / fStep))
-            idx_f2 = int(np.around((-fdd[i] - fMin) / fStep))
-            idx_theta = int(np.around((theta[i] - thetaMin) / thetaStep))
+            idx_f1 = int(np.around((fdd[i] - fdd_min) / fdd_step))
+            idx_f2 = int(np.around((-fdd[i] - fdd_min) / fdd_step))
+            idx_theta = int(np.around((theta[i] - theta_min) / theta_step))
             spc_vs_theta[idx_theta][idx_f1] += weights[i]
             spc_vs_theta[idx_theta][idx_f2] += weights[i]
         spc_vs_theta = spc_vs_theta * self.spc_max / np.amax(spc_vs_theta)
         return spc_vs_theta
     
-    def dipolar_spectrum_vs_xi(self, var, spinA, spinB):
+    def dipolar_spectrum_vs_xi(self, parameters, spinA, spinB):
         Nf = self.Nf
         Nxi = self.xi_bins.size
         spc_vs_xi = np.zeros((Nxi, Nf))
         for i in range(Nxi):
             sys.stdout.write('\r')
             status = int(float(i+1) / float(Nxi) * 100)
-            sys.stdout.write("Calculating dipolar spectrum vs xi... %d%% " % (status))
+            sys.stdout.write("Calculating the dipolar spectrum vs xi... %d%% " % (status))
             sys.stdout.flush()
-            varNew = copy.deepcopy(var)
-            varNew['xi_mean'] = self.xi_bins[i] * const['deg2rad']
-            fdd, theta = self.dipolar_frequencies(varNew, spinA, spinB)
+            new_parameters = copy.deepcopy(parameters)
+            new_parameters['xi_mean'] = self.xi_bins[i] * const['deg2rad']
+            fdd, theta = self.dipolar_frequencies(new_parameters, spinA, spinB)
             spc = self.dipolar_spectrum(fdd)
             spc_vs_xi[i] = spc
         return spc_vs_xi
 
-    def dipolar_spectrum_vs_phi(self, var, spinA, spinB):
+    def dipolar_spectrum_vs_phi(self, parameters, spinA, spinB):
         Nf = self.Nf
         Nphi = self.phi_bins.size
         spc_vs_phi = np.zeros((Nphi, Nf))
         for i in range(Nphi):
             sys.stdout.write('\r')
             status = int(float(i+1) / float(Nphi) * 100)
-            sys.stdout.write("Calculating dipolar spectrum vs phi... %d%% " % (status))
+            sys.stdout.write("Calculating the dipolar spectrum vs phi... %d%% " % (status))
             sys.stdout.flush()
-            varNew = copy.deepcopy(var)
-            varNew['phi_mean'] = self.phi_bins[i] * const['deg2rad']
-            fdd, theta = self.dipolar_frequencies(varNew, spinA, spinB)
+            new_parameters = copy.deepcopy(parameters)
+            new_parameters['phi_mean'] = self.phi_bins[i] * const['deg2rad']
+            fdd, theta = self.dipolar_frequencies(new_parameters, spinA, spinB)
             spc = self.dipolar_spectrum(fdd)
             spc_vs_phi[i] = spc
         return spc_vs_phi	
 
-    def dipolar_spectrum_vs_temp(self, fdd, spinA, spinB, calcSettings):
+    def dipolar_spectrum_vs_temp(self, fdd, spinA, spinB, calc_settings):
         Nf = self.Nf
         Ntemp = self.temp_bins.size
         spc_vs_temp = np.zeros((Ntemp, Nf))
@@ -355,110 +354,103 @@ class Simulator:
         for i in range(Ntemp):
             sys.stdout.write('\r')
             status = int(float(i+1) / float(Ntemp) * 100)
-            sys.stdout.write("Calculating dipolar spectrum vs temperature... %d%% " % (status))
+            sys.stdout.write("Calculating the dipolar spectrum vs temperature... %d%% " % (status))
             sys.stdout.flush()
             temp = self.temp_bins[i]
-            pB = flip_probabilities(self.gB, spinB['g'], calcSettings['magnetic_field'], temp)
+            pB = flip_probabilities(self.gB, spinB['g'], calc_settings['magnetic_field'], temp)
             spc = self.dipolar_spectrum(fdd, pB)
             spc_vs_temp[i] = spc
-            pB = flip_probabilities(g, spinB['g'], calcSettings['magnetic_field'], temp)
+            pB = flip_probabilities(g, spinB['g'], calc_settings['magnetic_field'], temp)
             depth_vs_temp[i] = pB           
         return [spc_vs_temp, g, depth_vs_temp]
 
-    def run_simulation(self, simSettings, expData, spinA, spinB, calcSettings):
-        sys.stdout.write('Starting simulation...\n')
-        sys.stdout.write('Running pre-calculations... ')
+    def run_simulation(self, sim_settings, exp_data, spinA, spinB, calc_settings):
+        sys.stdout.write('Starting the simulation...\n')
+        sys.stdout.write('Running the pre-calculations... ')
         # Set the frequency axis
-        if simSettings['modes']['spc'] \
-            or simSettings['modes']['spc_vs_theta'] or simSettings['modes']['spc_vs_xi'] or simSettings['modes']['spc_vs_phi'] or simSettings['modes']['spc_vs_temp']:
-            self.f = self.set_faxis(expData['f'], spinA['g'], spinB['g'], simSettings['variables'])
+        if (sim_settings['modes']['spc'] or sim_settings['modes']['spc_vs_theta'] or 
+            sim_settings['modes']['spc_vs_xi'] or sim_settings['modes']['spc_vs_phi'] or 
+            sim_settings['modes']['spc_vs_temp']):
+            self.f = self.set_faxis(exp_data['f'], spinA['g'], spinB['g'], sim_settings['parameters'])
             self.Nf = self.f.size
             # Normalize the frequency axis
-            if simSettings['settings']['faxis_normalized']:
-                self.fn = self.normalize_faxis(simSettings['variables'])
+            if sim_settings['settings']['faxis_normalized']:
+                self.fn = self.normalize_faxis(sim_settings['parameters'])
         # Set the time axis
-        if (simSettings['modes']['timetrace']):
-            self.t = self.set_taxis(expData['t'], spinA['g'], spinB['g'], simSettings['variables'])
+        if sim_settings['modes']['timetrace']:
+            self.t = self.set_taxis(exp_data['t'], spinA['g'], spinB['g'], sim_settings['parameters'])
             self.Nt = self.t.size
         # Set the modulation depth parameter
-        if (simSettings['modes']['timetrace']):
-            self.depth = self.set_modulation_depth(expData['sig'])
+        if sim_settings['modes']['timetrace']:
+            self.depth = self.set_modulation_depth(exp_data['sig'], sim_settings['settings']['mod_depth'])
         # Generate the ensemble of spin pairs
         self.field, self.gA, self.gB, self.qA, self.qB = self.spin_ensemble(spinA, spinB)
         # Calculate the dipolar frequencies       
-        if simSettings['modes']['spc'] or simSettings['modes']['timetrace'] or simSettings['modes']['spc_vs_theta'] or simSettings['modes']['spc_vs_temp']:
-            fdd, theta = self.dipolar_frequencies(simSettings['variables'], spinA, spinB, self.gA, self.gB, self.qA, self.qB, simSettings['modes']['spc_vs_theta'])
+        if (sim_settings['modes']['spc'] or sim_settings['modes']['timetrace'] or 
+            sim_settings['modes']['spc_vs_theta'] or sim_settings['modes']['spc_vs_temp']):
+            fdd, theta = self.dipolar_frequencies(sim_settings['parameters'], spinA, spinB, self.gA, self.gB, self.qA, self.qB, sim_settings['modes']['spc_vs_theta'])
         # Calculate weights for different g-values of spin B
-        if calcSettings['g_selectivity'] and (spinB['type'] == "anisotropic"):
-            self.pB = flip_probabilities(self.gB, spinB['g'], calcSettings['magnetic_field'], simSettings['variables']['temp'])
+        if (calc_settings['g_selectivity'] and spinB['type'] == "anisotropic"):
+            self.pB = flip_probabilities(self.gB, spinB['g'], calc_settings['magnetic_field'], sim_settings['parameters']['temp'])
         sys.stdout.write('[DONE]\n')    
         # Calculate the spectrum
-        if (simSettings['modes']['spc']):
-            sys.stdout.write('Calculating dipolar spectrum... ')
-            #time_start = time.time()
+        if sim_settings['modes']['spc']:
+            sys.stdout.write('Calculating the dipolar spectrum... ')
             self.spc = self.dipolar_spectrum(fdd)
             sys.stdout.write('[DONE]\n') 
-            if not (expData['f'] == []):
-                score = rmsd(self.spc, expData['spc'], expData['f'], calcSettings['f_min'], calcSettings['f_max'])
+            if not (exp_data['f'] == []):
+                score = rmsd(self.spc, exp_data['spc'], exp_data['f'], calc_settings['f_min'], calc_settings['f_max'])
                 sys.stdout.write("RMSD = %f \n" % score)
-            #time_finish = time.time()
-            #time_elapsed = str(datetime.timedelta(seconds = time_finish - time_start))
-            #sys.stdout.write('Calculation time: %s\n' % (time_elapsed))
         # Calculate the time trace
-        if simSettings['modes']['timetrace']:
-            sys.stdout.write('Calculating dipolar time trace... ')
-            #time_start = time.time()
+        if sim_settings['modes']['timetrace']:
+            sys.stdout.write('Calculating the dipolar time trace... ')
             #self.sig = self.dipolar_timetrace(fdd)
             self.sig = self.dipolar_timetrace_fast(fdd) 
             sys.stdout.write('[DONE]\n')
-            if not (expData['t'] == []):
-                score = rmsd(self.sig, expData['sig'], expData['t'], calcSettings['t_min'], calcSettings['t_max'])
-                sys.stdout.write("RMSD = %f \n" % score)
-            #time_finish = time.time()
-            #time_elapsed = str(datetime.timedelta(seconds = time_finish - time_start))
-            #sys.stdout.write('Calculation time: %s\n' % (time_elapsed))   
+            if not (exp_data['t'] == []):
+                score = rmsd(self.sig, exp_data['sig'], exp_data['t'], calc_settings['t_min'], calc_settings['t_max'])
+                sys.stdout.write("RMSD = %f \n" % score) 
         # Calculate the dipolar spectrum vs theta
-        if (simSettings['modes']['spc_vs_theta']):
-            sys.stdout.write('Calculating dipolar spectrum vs theta... ')
-            self.theta_bins = simSettings['settings']['theta_bins']
+        if (sim_settings['modes']['spc_vs_theta']):
+            sys.stdout.write('Calculating the dipolar spectrum vs theta... ')
+            self.theta_bins = sim_settings['settings']['theta_bins']
             self.spc_vs_theta = self.dipolar_spectrum_vs_theta(fdd, theta)
-            if not simSettings['modes']['spc']:
+            if not sim_settings['modes']['spc']:
                 self.spc = self.dipolar_spectrum(fdd)
             sys.stdout.write('[DONE]\n')      
         # Calculate a dipolar spectrum vs xi
-        if simSettings['modes']['spc_vs_xi']:
-            sys.stdout.write('Calculating dipolar spectrum vs xi... ')
-            self.xi_bins = simSettings['settings']['xi_bins']
-            self.spc_vs_xi = self.dipolar_spectrum_vs_xi(simSettings['variables'], spinA, spinB)
+        if sim_settings['modes']['spc_vs_xi']:
+            sys.stdout.write('Calculating the dipolar spectrum vs xi... ')
+            self.xi_bins = sim_settings['settings']['xi_bins']
+            self.spc_vs_xi = self.dipolar_spectrum_vs_xi(sim_settings['parameters'], spinA, spinB)
             sys.stdout.write('[DONE]\n')
         # Calculate a dipolar spectrum vs phi
-        if simSettings['modes']['spc_vs_phi']:
-            sys.stdout.write('Calculating dipolar spectrum vs phi... ')
-            self.phi_bins = simSettings['settings']['phi_bins']
-            self.spc_vs_phi = self.dipolar_spectrum_vs_phi(simSettings['variables'], spinA, spinB)
+        if sim_settings['modes']['spc_vs_phi']:
+            sys.stdout.write('Calculating the dipolar spectrum vs phi... ')
+            self.phi_bins = sim_settings['settings']['phi_bins']
+            self.spc_vs_phi = self.dipolar_spectrum_vs_phi(sim_settings['parameters'], spinA, spinB)
             sys.stdout.write('[DONE]\n')
         # Calculate a dipolar spectrum vs temperature
-        #if simSettings['modes']['spc_vs_temp'] and calcSettings['g_selectivity'] and (spinB['type'] == "anisotropic"):
-        if simSettings['modes']['spc_vs_temp']:
-            sys.stdout.write('Calculating dipolar spectrum vs temperature... ')
-            self.temp_bins = simSettings['settings']['temp_bins']
-            self.spc_vs_temp, self.g, self.depth_vs_temp = self.dipolar_spectrum_vs_temp(fdd, spinA, spinB, calcSettings)
+        if (sim_settings['modes']['spc_vs_temp'] and calc_settings['g_selectivity']):
+            sys.stdout.write('Calculating the dipolar spectrum vs temperature... ')
+            self.temp_bins = sim_settings['settings']['temp_bins']
+            self.spc_vs_temp, self.g, self.depth_vs_temp = self.dipolar_spectrum_vs_temp(fdd, spinA, spinB, calc_settings)
             sys.stdout.write('[DONE]\n')
-        sys.stdout.write('Simulation is finished\n\n')
+        sys.stdout.write('The simulation is finished\n\n')
 
-    def init_fitting(self, fitSettings, expData, spinA, spinB, calcSettings):
-        if (fitSettings['settings']['fitted_data'] == 'spectrum'):
+    def init_fitting(self, fit_settings, exp_data, spinA, spinB, calc_settings):
+        if fit_settings['settings']['fitted_data'] == 'spectrum':
             # Set the frequency axis
-            self.f = self.set_faxis(expData['f'])
+            self.f = self.set_faxis(exp_data['f'])
             self.Nf = self.f.size     
-        elif (fitSettings['settings']['fitted_data'] == 'timetrace'):
+        elif fit_settings['settings']['fitted_data'] == 'timetrace':
             # Set the time axis
-            self.t = self.set_taxis(expData['t'])
+            self.t = self.set_taxis(exp_data['t'])
             self.Nt = self.t.size
             # Set the modulation depth
-            self.depth = self.set_modulation_depth(expData['sig'])
+            self.depth = self.set_modulation_depth(exp_data['sig'])
         # Generate the ensemble of spin pairs
         self.field, self.gA, self.gB, self.qA, self.qB = self.spin_ensemble(spinA, spinB)
         # Calculate weights for different g-values of spin B
-        if (fitSettings['variables']['indices']['temp'] == -1) and calcSettings['g_selectivity'] and (spinB['type'] == "anisotropic"):
-            self.pB = flip_probabilities(self.gB, spinB['g'], calcSettings['magnetic_field'], fitSettings['variables']['fixed']['temp'])
+        if (fit_settings['parameters']['indices']['temp'] == -1 and calc_settings['g_selectivity'] and spinB['type'] == "anisotropic"):
+            self.pB = flip_probabilities(self.gB, spinB['g'], calc_settings['magnetic_field'], fit_settings['parameters']['fixed']['temp'])

@@ -75,13 +75,13 @@ class Generation:
 		else:
 			self.chromosomes = offspring[:self.size-1]
 			
-	def score_chromosomes(self, fitSettings, simulator, expData, spinA, spinB, calcSettings):
-		func = partial(score_function, fitSettings=fitSettings, simulator=simulator, expData=expData, spinA=spinA, spinB=spinB, calcSettings=calcSettings)
-		var = []
+	def score_chromosomes(self, fit_settings, simulator, exp_data, spinA, spinB, calc_settings):
+		func = partial(score_function, fit_settings=fit_settings, simulator=simulator, exp_data=exp_data, spinA=spinA, spinB=spinB, calc_settings=calc_settings)
+		parameters = []
 		for i in range(self.size): 
-			var.append(self.chromosomes[i].genes)
+			parameters.append(self.chromosomes[i].genes)
 		pool = Pool()
-		score = pool.map(func, var)
+		score = pool.map(func, parameters)
 		pool.close()
 		pool.join()
 		for i in range(self.size):

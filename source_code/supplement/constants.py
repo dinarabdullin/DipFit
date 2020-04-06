@@ -15,15 +15,15 @@ const['nm2m'] = 1e-9
 const['deg2rad'] = np.pi / 180.0
 const['rad2deg'] = 180.0 / np.pi
 const['wn2MHz'] = 29979.0
-const['plankConstant'] = 6.626070040e-34 # J*s
-const['bohrMagneton'] = 9.274009994e-24 # J/T
-const['bolzmannConstant'] = 1.38064852e-23 # J/K
+const['plank_constant'] = 6.626070040e-34 # J*s
+const['bohr_magneton'] = 9.274009994e-24 # J/T
+const['bolzmann_constant'] = 1.38064852e-23 # J/K
 const['ge'] = 2.0023 # free electron g factor
-const['vacuumPermeabilityOver4Pi'] = 1e-7 # T*m/A
-const['Fez'] = const['Hz2MHz'] * const['bohrMagneton'] / const['plankConstant'] # MHz/T
-const['Fdd'] = const['Hz2MHz'] * const['vacuumPermeabilityOver4Pi'] * const['bohrMagneton']**2 / (const['plankConstant'] * const['nm2m']**3) # MHz
+const['vacuum_permeability'] = 1e-7 # T*m/A
+const['Fez'] = const['Hz2MHz'] * const['bohr_magneton'] / const['plank_constant'] # MHz/T
+const['Fdd'] = const['Hz2MHz'] * const['vacuum_permeability'] * const['bohr_magneton']**2 / (const['plank_constant'] * const['nm2m']**3) # MHz
 
-const['variableNames'] = [
+const['variable_names'] = [
 	'r_mean',
 	'r_width', 
 	'xi_mean', 
@@ -32,7 +32,7 @@ const['variableNames'] = [
 	'phi_width', 
 	'temp']
 	
-const['longVariableNames'] = {
+const['long_variable_names'] = {
 	'r_mean'   : 'r mean (nm)',
 	'r_width'  : 'r width (nm)', 
 	'xi_mean'  : 'xi mean (deg)',
@@ -41,7 +41,7 @@ const['longVariableNames'] = {
 	'phi_width': 'phi mean (deg)',
 	'temp'     : 'temperature (K)'}
 
-const['variableScales'] = {
+const['variable_scales'] = {
 	'r_mean'   : 1.0,
 	'r_width'  : 1.0, 
 	'xi_mean'  : const['deg2rad'], 
@@ -50,7 +50,7 @@ const['variableScales'] = {
 	'phi_width': const['deg2rad'], 
 	'temp'     : 1.0}
 	
-const['variableLabels'] = {
+const['variable_labels'] = {
 	'r_mean'   : r'$\langle\mathit{r}\rangle$ (nm)',
 	'r_width'  : r'$\mathit{\Delta r}$ (nm)', 
 	'xi_mean'  : r'$\langle\mathit{\xi}\rangle$ $^\circ$', 

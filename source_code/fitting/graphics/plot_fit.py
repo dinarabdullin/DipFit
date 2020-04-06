@@ -11,7 +11,7 @@ import fitting.graphics.set_style
 def plot_fit(fit, data, fitted_data, ranges, save_figure=False, filename=''):
     fig = plt.figure(facecolor='w', edgecolor='w')
     axes = fig.gca()
-    if (fitted_data == 'spectrum'):
+    if fitted_data == 'spectrum':
         axes.plot(data['f'], data['spc'], 'k-')
         graph = axes.plot(data['f'], fit, 'r--')
         axes.legend(('exp', 'fit'), loc='upper right', frameon=False)
@@ -22,7 +22,7 @@ def plot_fit(fit, data, fitted_data, ranges, save_figure=False, filename=''):
         axes.set_ylim(0.0, ranges['spc_max']+0.1)
         axes.set_xlabel(r'Frequency (MHz)')
         axes.set_ylabel('Amplitude')
-    elif (fitted_data == 'timetrace'):
+    elif fitted_data == 'timetrace':
         axes.plot(data['t'], data['sig'], 'k-')
         graph = axes.plot(data['t'], fit, 'r--')
         axes.legend(('exp', 'fit'), loc='upper right', frameon=False)

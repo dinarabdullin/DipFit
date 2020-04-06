@@ -9,9 +9,9 @@ from simulation.graphics.plot_simulation_data import plot_simulation_data
 from simulation.output.save_simulation_data import save_simulation_data
 from fitting.genetic_algorithm import GeneticAlgorithm
 from fitting.graphics.plot_fitting_data import plot_fitting_data
-from fitting.graphics.plot_validation_data import plot_validation_data
+from fitting.graphics.plot_error_analysis_data import plot_error_analysis_data
 from fitting.output.save_fitting_data import save_fitting_data
-from fitting.output.save_validation_data import save_validation_data
+from fitting.output.save_error_analysis_data import save_error_analysis_data
 from supplement.make_output_directory import make_output_directory 
 from supplement.keep_figures_live import keep_figures_live 
 
@@ -21,60 +21,60 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', help="A path to a configuration file")
     args = parser.parse_args()
-    configPath = args.filepath
-    mode, expData, spinA, spinB, simSettings, fitSettings, valSettings, calcSettings, outputSettings = read_config(configPath)
+    config_path = args.filepath
+    mode, exp_data, spinA, spinB, sim_settings, fit_settings, err_settings, calc_settings, output_settings = read_config(config_path)
 
     # Make an output directory
-    make_output_directory(outputSettings, configPath)
+    make_output_directory(output_settings, config_path)
 
     # Spectral simulator
-    simulator = Simulator(calcSettings)
+    simulator = Simulator(calc_settings)
 
     # Simulation
     if mode['simulation']:
         # Run the simulation
-        simulator.run_simulation(simSettings, expData, spinA, spinB, calcSettings)	
+        simulator.run_simulation(sim_settings, exp_data, spinA, spinB, calc_settings)	
         # Save simulation results
-        save_simulation_data(simulator, simSettings, expData, outputSettings)	
+        save_simulation_data(simulator, sim_settings, exp_data, output_settings)	
         # Plot simulation results 
-        plot_simulation_data(simulator, simSettings, expData, calcSettings, outputSettings)
+        plot_simulation_data(simulator, sim_settings, exp_data, calc_settings, output_settings)
 
     # Fitting
     if mode['fitting']:
         # Init the fitting mode of the simulator
-        simulator.init_fitting(fitSettings, expData, spinA, spinB, calcSettings)
-        if fitSettings['settings']['method'] == "genetic":
+        simulator.init_fitting(fit_settings, exp_data, spinA, spinB, calc_settings)
+        if fit_settings['settings']['method'] == "genetic":
             # Optimizer
-            optimizer = GeneticAlgorithm(fitSettings['settings'], expData)
+            optimizer = GeneticAlgorithm(fit_settings['settings'], exp_data)
             # Run the fitting
-            optimizer.run_optimization(fitSettings, simulator, expData, spinA, spinB, calcSettings)
-        # Save fitting results
-        save_fitting_data(optimizer, expData, fitSettings, outputSettings)
-        # Plot fitting results
-        plot_fitting_data(optimizer, expData, fitSettings, calcSettings, outputSettings)
-        # Validate the fitting parameters
-        optimizer.validation(valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)
-        # Save validation results
-        save_validation_data(optimizer, valSettings, outputSettings)
-        # Plot validation results
-        plot_validation_data(optimizer, valSettings, fitSettings, outputSettings)
+            optimizer.run_optimization(fit_settings, simulator, exp_data, spinA, spinB, calc_settings)
+        # Save the fitting results
+        save_fitting_data(optimizer, exp_data, fit_settings, output_settings)
+        # Plot the fitting results
+        plot_fitting_data(optimizer, exp_data, fit_settings, calc_settings, output_settings)
+        # Run the error analysis
+        optimizer.error_analysis(err_settings, fit_settings, simulator, exp_data, spinA, spinB, calc_settings)
+        # Save the results of the error analysis 
+        save_error_analysis_data(optimizer, err_settings, output_settings)
+        # Plot the results of the error analysis 
+        plot_error_analysis_data(optimizer, err_settings, fit_settings, output_settings)
         # Display the optmized fitting parameters
         optimizer.print_optimized_parameters()    
 
-    # Validation
-    if mode['validation']:
+    # error analysis
+    if mode['error_analysis']:
         # Init the fitting mode of the simulator
-        simulator.init_fitting(fitSettings, expData, spinA, spinB, calcSettings)
+        simulator.init_fitting(fit_settings, exp_data, spinA, spinB, calc_settings)
         # Optimizer
-        if fitSettings['settings']['method'] == "genetic":
-            optimizer = GeneticAlgorithm(fitSettings['settings'], expData)
-        # Run the validation
-        optimizer.best_parameters = valSettings['optimized_parameters']
-        optimizer.validation(valSettings, fitSettings, simulator, expData, spinA, spinB, calcSettings)
-        # Save validation results
-        save_validation_data(optimizer, valSettings, outputSettings)
-        # Plot validation results
-        plot_validation_data(optimizer, valSettings, fitSettings, outputSettings)
+        if fit_settings['settings']['method'] == "genetic":
+            optimizer = GeneticAlgorithm(fit_settings['settings'], exp_data)
+        # Run the error analysis
+        optimizer.best_parameters = err_settings['optimized_parameters']
+        optimizer.error_analysis(err_settings, fit_settings, simulator, exp_data, spinA, spinB, calc_settings)
+        # Save the results of the error analysis
+        save_error_analysis_data(optimizer, err_settings, output_settings)
+        # Plot the results of the error analysis 
+        plot_error_analysis_data(optimizer, err_settings, fit_settings, output_settings)
         # Display the optmized fitting parameters
         optimizer.print_optimized_parameters()
            

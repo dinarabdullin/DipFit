@@ -6,13 +6,13 @@ import numpy as np
 
 
 def load_timetrace(filepath):
-	xList = []
-	yList = []
+	x_list = []
+	y_list = []
 	file = open(filepath, 'r')
 	for line in file:
 		str = line.split()
-		xList.append(float(str[0]))
-		yList.append(float(str[1]))
-	xExp = np.array(xList)	
-	yExp = np.array(yList)	
-	return [xExp, yExp]
+		x_list.append(float(str[0]))
+		y_list.append(float(str[1]))
+	x_array = np.array(x_list)	
+	y_array = np.array(y_list)	
+	return [x_array, y_array]
