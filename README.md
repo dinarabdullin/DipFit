@@ -2,13 +2,13 @@ DipFit
 =========
 The program DipFit was developed for the analysis of the Pulsed EPR Dipolar Spectroscopy (PDS) signals, which correspond to spin systems consisting of one isotropic and one anisotropic S = 1/2 centers.
 
-The program has three modes: simulation, fitting, and validation.
+The program has three modes: simulation, fitting, and error analysis.
 
 In the simulation mode, the PDS time trace / spectrum is simulated using the pre-defined geometric model of a spin system and the spectroscopic parameters of spin centers. 
 
 In the fitting mode, the experimental PDS time trace / spectrum is fitted by means of genetic algorithm. In this case, the geometric model of a spin system is optimized until the simulated PDS time trace / spectrum provides the best fit to the experimental PDS time trace / spectrum.
 
-In the validation mode, the results of the fitting are validated via the calculation of the confidence intervals for the optimized fitting parameters.
+In the error analysis mode, the errors of optimized fitting parameters are estimated.
 
 Further description of the program can be found in the Manual and the papers below.
 
