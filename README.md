@@ -1,9 +1,7 @@
 DipFit
 =========
 
-Note
-=========
-This is the older version of the program AnisoDipFit. The latest version of the program can be found at:
+Note: This is the older version of the program AnisoDipFit. The latest version of the program can be found at:
 https://github.com/dinarabdullin/AnisoDipFit
 
 Description
