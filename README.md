@@ -1,5 +1,13 @@
 DipFit
 =========
+
+Note
+=========
+This is the older version of the program AnisoDipFit. The latest version of the program can be found at:
+https://github.com/dinarabdullin/AnisoDipFit
+
+Description
+=========
 The program DipFit was developed for the analysis of the Pulsed EPR Dipolar Spectroscopy (PDS) signals, which correspond to spin systems consisting of one isotropic and one anisotropic S = 1/2 centers.
 
 The program has three modes: simulation, fitting, and error analysis.
